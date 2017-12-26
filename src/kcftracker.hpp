@@ -95,10 +95,10 @@ public:
     KCFTracker(bool hog = true, bool fixed_window = true, bool multiscale = true, bool lab = true);
 
     // Initialize tracker 
-    virtual void init(const cv::Rect &roi, cv::Mat image);
+    virtual void init(const cv::Rect &roi, cv::Mat image);//image是第一针图像，roi为用户框定的需要跟踪的目标
     
     // Update position based on the new frame
-    virtual cv::Rect update(cv::Mat image);
+    virtual cv::Rect update(cv::Mat image);//在当前桢进行重新检测目标，返回一个roi
 
     float interp_factor; // linear interpolation factor for adaptation
     float sigma; // gaussian kernel bandwidth
