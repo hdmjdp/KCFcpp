@@ -84,8 +84,8 @@ the use of this software, even if advised of the possibility of such damage.
 
 #include "tracker.h"
 
-#ifndef _OPENCV_KCFTRACKER_HPP_
-#define _OPENCV_KCFTRACKER_HPP_
+#ifndef _OPENCV_KCFTRACKER_HPP_//主要目的是防止头文件的重复包含和编译
+#define _OPENCV_KCFTRACKER_HPP_//但是int a之前已经编译过了，所以就会报重定义错误。加上ifndef/define/endif，就可以防止这种重定义错误。
 #endif
 
 class KCFTracker : public Tracker
