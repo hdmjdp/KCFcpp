@@ -16,7 +16,7 @@
 
 
 
-#pragma once
+#pragma once//保证该头文件只被编译一次
 
 #include <opencv2/opencv.hpp>
 #include <string>
@@ -27,7 +27,7 @@ public:
     Tracker()  {}
    virtual  ~Tracker() { }
 
-    virtual void init(const cv::Rect &roi, cv::Mat image) = 0;
+    virtual void init(const cv::Rect &roi, cv::Mat image) = 0;//该类其实是一个虚基类或者叫抽象类
     virtual cv::Rect  update( cv::Mat image)=0;
 
 
