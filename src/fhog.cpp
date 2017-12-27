@@ -92,9 +92,10 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMapCaskade *
     int *nearest;
     float *w, a_x, b_x;
 
+    //// 横向和纵向的3长度{-1，0，1}矩阵 ,用于计算梯度（卷积的方式）
     float kernel[3] = {-1.f, 0.f, 1.f};
-    CvMat kernel_dx = cvMat(1, 3, CV_32F, kernel);
-    CvMat kernel_dy = cvMat(3, 1, CV_32F, kernel);
+    CvMat kernel_dx = cvMat(1, 3, CV_32F, kernel);//变成行矩阵形式
+    CvMat kernel_dy = cvMat(3, 1, CV_32F, kernel);//列矩阵
 
     float * r;
     int   * alfa;
@@ -114,16 +115,21 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMapCaskade *
     dy    = cvCreateImage(cvSize(image->width, image->height), 
                           IPL_DEPTH_32F, 3);
 
-    sizeX = width  / k;
+    sizeX = width  / k;// 向下取整的（边界大小/4），k = cell_size
     sizeY = height / k;
-    px    = 3 * NUM_SECTOR; 
+    px    = 3 * NUM_SECTOR; //角度分为多个bin
     p     = px;
     stringSize = sizeX * p;
     allocFeatureMapObject(map, sizeX, sizeY, p);
 
-    cvFilter2D(image, dx, &kernel_dx, cvPoint(-1, 0));
-    cvFilter2D(image, dy, &kernel_dy, cvPoint(0, -1));
-    
+    // image：输入图像.  分别对x方向和y方向进行滤波,得到2个与原图同样大小的矩阵dx,dy
+    // dx：输出图像.
+    // kernel_dx：卷积核, 单通道浮点矩阵. 如果想要应用不同的核于不同的通道，先用 cvSplit 函数分解图像到单个色彩通道上，然后单独处理。
+    // cvPoint(-1, 0)：核的锚点表示一个被滤波的点在核内的位置。 锚点应该处于核内部。缺省值 (-1,-1) 表示锚点在核中心。
+    // 函数 cvFilter2D 对图像进行线性滤波，支持 In-place 操作。当核运算部分超出输入图像时，函数从最近邻的图像内部象素差值得到边界外面的象素值。
+    cvFilter2D(image, dx, &kernel_dx, cvPoint(-1, 0));// 起点在(x-1,y)，按x方向滤波
+    cvFilter2D(image, dy, &kernel_dy, cvPoint(0, -1));// 起点在(x,y-1)，按y方向滤波
+    // 初始化cos和sin函数
     float arg_vector;
     for(i = 0; i <= NUM_SECTOR; i++)
     {
@@ -137,18 +143,21 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMapCaskade *
 
     for(j = 1; j < height - 1; j++)
     {
+        // 取出滤波后的矩阵 每一行起点指针
         datadx = (float*)(dx->imageData + dx->widthStep * j);
         datady = (float*)(dy->imageData + dy->widthStep * j);
+        //遍历列, 对每个元素进行一系列操作
         for(i = 1; i < width - 1; i++)
         {
-            c = 0;
+            c = 0;//通道0的梯度求解,其实相当于用通道1的梯度值取做个初始化
             x = (datadx[i * numChannels + c]);
             y = (datady[i * numChannels + c]);
 
-            r[j * width + i] =sqrtf(x * x + y * y);
+            r[j * width + i] =sqrtf(x * x + y * y);//求出梯度
+            // 使用向量大小最大的通道替代储存值
             for(ch = 1; ch < numChannels; ch++)
             {
-                tx = (datadx[i * numChannels + ch]);
+                tx = (datadx[i * numChannels + ch]);//取出dx的像素值
                 ty = (datady[i * numChannels + ch]);
                 magnitude = sqrtf(tx * tx + ty * ty);
                 if(magnitude > r[j * width + i])

@@ -346,10 +346,10 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
     float cx = _roi.x + _roi.width / 2;
     float cy = _roi.y + _roi.height / 2;
 
-    if (inithann) {
+    if (inithann) {// 初始化hanning窗， 其实只执行一次，只在第一帧的时候inithann=1
         int padded_w = _roi.width * padding;
         int padded_h = _roi.height * padding;
-        
+        //按照长宽比例修改长宽大小，保证比较大的边为template_size大小
         if (template_size > 1) {  // Fit largest dimension to the given template size
             if (padded_w >= padded_h)  //fit to width
                 _scale = padded_w / (float) template_size;
@@ -386,7 +386,7 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
             _tmpl_sz.height = (_tmpl_sz.height / 2) * 2;
         }
     }
-
+    // 检测区域大小
     extracted_roi.width = scale_adjust * _scale * _tmpl_sz.width;
     extracted_roi.height = scale_adjust * _scale * _tmpl_sz.height;
 
@@ -394,6 +394,7 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
     extracted_roi.x = cx - extracted_roi.width / 2;
     extracted_roi.y = cy - extracted_roi.height / 2;
 
+    // 提取目标区域像素，超边界则做填充
     cv::Mat FeaturesMap;  
     cv::Mat z = RectTools::subwindow(image, extracted_roi, cv::BORDER_REPLICATE);
     
@@ -404,8 +405,8 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
     // HOG features
     if (_hogfeatures) {
         IplImage z_ipl = z;
-        CvLSVMFeatureMapCaskade *map;
-        getFeatureMaps(&z_ipl, cell_size, &map);
+        CvLSVMFeatureMapCaskade *map;//申请一个结构体指针
+        getFeatureMaps(&z_ipl, cell_size, &map);//提取子窗口图像的hog特征
         normalizeAndTruncate(map,0.2f);
         PCAFeatureMaps(map);
         size_patch[0] = map->sizeY;
