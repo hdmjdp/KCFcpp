@@ -15,14 +15,20 @@ using namespace cv;
 
 int main(int argc, char* argv[]){
 
+//	char cur_fn[255];
+//	char prefix[] = "./images/";
+//	char ext[] = ".jpg";
+//	cv::VideoCapture capture(argv[1]);
+
+
 	if (argc > 5) return -1;
 
 	bool HOG = true;
 	bool FIXEDWINDOW = false;
 	bool MULTISCALE = true;
-	bool SILENT = true;
+	bool SILENT = false;//true;
 	bool LAB = false;
-
+    /*
 	for(int i = 0; i < argc; i++){
 		if ( strcmp (argv[i], "hog") == 0 )
 			HOG = true;
@@ -39,7 +45,7 @@ int main(int argc, char* argv[]){
 		if ( strcmp (argv[i], "gray") == 0 )
 			HOG = false;
 	}
-	
+	*/
 	// Create KCFTracker object
 	KCFTracker tracker(HOG, FIXEDWINDOW, MULTISCALE, LAB);
 
@@ -49,50 +55,61 @@ int main(int argc, char* argv[]){
 	// Tracker results
 	Rect result;
 
-	// Path to list.txt
-	ifstream listFile;
-	string fileName = "images.txt";
-  	listFile.open(fileName);
+//	// Path to list.txt
+//	ifstream listFile;
+//	string fileName = "/Volumes/Transcend/KCFcpp/Dudek/images.txt";
+//    cout<<fileName<<endl;
+//  	listFile.open(fileName);
 
   	// Read groundtruth for the 1st frame
   	ifstream groundtruthFile;
-	string groundtruth = "region.txt";
+	string groundtruth = "/Volumes/Transcend/KCFcpp/Dudek/region.txt"; //数据集中其实只有四个值,分别是x, y, box-width, box-height
   	groundtruthFile.open(groundtruth);
   	string firstLine;
   	getline(groundtruthFile, firstLine);
 	groundtruthFile.close();
-  	
+  	//cout<<firstLine<<endl;
   	istringstream ss(firstLine);
 
   	// Read groundtruth like a dumb
-  	float x1, y1, x2, y2, x3, y3, x4, y4;
-  	char ch;
-	ss >> x1;
-	ss >> ch;
-	ss >> y1;
-	ss >> ch;
-	ss >> x2;
-	ss >> ch;
-	ss >> y2;
-	ss >> ch;
-	ss >> x3;
-	ss >> ch;
-	ss >> y3;
-	ss >> ch;
-	ss >> x4;
-	ss >> ch;
-	ss >> y4; 
-
+//  	float x1, y1, x2, y2, x3, y3, x4, y4;
+//
+//  	char ch;
+//	ss >> x1;
+//	ss >> ch;
+//	ss >> y1;
+//	ss >> ch;
+//	ss >> x2;
+//	ss >> ch;
+//	ss >> y2;
+//	ss >> ch;
+//	ss >> x3;
+//	ss >> ch;
+//	ss >> y3;
+//	ss >> ch;
+//	ss >> x4;
+//	ss >> ch;
+//	ss >> y4;
+//    cout<<x1<<','<<y1<<','<<endl;
+    float x, y, width0, height0;
+    char ch;
+    ss >> x;
+    ss >> ch;
+	ss >> y;
+    ss >> ch;
+	ss >> width0;
+    ss >> ch;
+	ss >> height0;
 	// Using min and max of X and Y for groundtruth rectangle
-	float xMin =  min(x1, min(x2, min(x3, x4)));
-	float yMin =  min(y1, min(y2, min(y3, y4)));
-	float width = max(x1, max(x2, max(x3, x4))) - xMin;
-	float height = max(y1, max(y2, max(y3, y4))) - yMin;
+	float xMin = x;//min(x1, min(x2, min(x3, x4)));
+	float yMin = y;//min(y1, min(y2, min(y3, y4)));
+	float width = width0;//max(x1, max(x2, max(x3, x4))) - xMin;
+	float height = height0;//max(y1, max(y2, max(y3, y4))) - yMin;
 
-	
+    cout<<xMin <<','<<yMin<<','<<width<<','<<height<<endl;
 	// Read Images
 	ifstream listFramesFile;
-	string listFrames = "images.txt";
+	string listFrames = "/Volumes/Transcend/KCFcpp/Dudek/images.txt";
 	listFramesFile.open(listFrames);
 	string frameName;
 
@@ -133,7 +150,7 @@ int main(int argc, char* argv[]){
 		}
 	}
 	resultsFile.close();
-
-	listFile.close();
+    listFramesFile.close();
+	//listFile.close();
 
 }
