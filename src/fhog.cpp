@@ -149,13 +149,13 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMapCaskade *
         //遍历列, 对每个元素进行一系列操作
         for(i = 1; i < width - 1; i++)
         {
-            c = 0;//通道0的梯度求解,其实相当于用通道1的梯度值取做个初始化
+            c = 0;//通道0的梯度求解,其实相当于用通道0的梯度值对r值做个初始化
             x = (datadx[i * numChannels + c]);
             y = (datady[i * numChannels + c]);
 
             r[j * width + i] =sqrtf(x * x + y * y);//求出梯度
-            // 使用向量大小最大的通道替代储存值
-            for(ch = 1; ch < numChannels; ch++)
+            // 使用3个通道中像素梯度值 最大的 作为最终的梯度
+            for(ch = 1; ch < numChannels; ch++)//这边只有2个通道的值,1,2
             {
                 tx = (datadx[i * numChannels + ch]);//取出dx的像素值
                 ty = (datady[i * numChannels + ch]);
@@ -168,7 +168,8 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMapCaskade *
                     y = ty;
                 }
             }/*for(ch = 1; ch < numChannels; ch++)*/
-            
+
+            //获得方向（角度）特征// 使用sqrt（cos*x*cos*x+sin*y*sin*y）最大的替换掉
             max  = boundary_x[0] * x + boundary_y[0] * y;
             maxi = 0;
             for (kk = 0; kk < NUM_SECTOR; kk++) 

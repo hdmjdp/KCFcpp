@@ -164,7 +164,7 @@ void KCFTracker::init(const cv::Rect &roi, cv::Mat image)
     assert(roi.width >= 0 && roi.height >= 0);
     _tmpl = getFeatures(image, 1);
     _prob = createGaussianPeak(size_patch[0], size_patch[1]);
-    _alphaf = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));
+    _alphaf = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));// 获取特征，在train里面每帧修改
     //_num = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));
     //_den = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));
     train(_tmpl, 1.0); // train with initial frame
@@ -172,6 +172,7 @@ void KCFTracker::init(const cv::Rect &roi, cv::Mat image)
 // Update position based on the new frame
 cv::Rect KCFTracker::update(cv::Mat image)
 {
+    // 修正边界
     if (_roi.x + _roi.width <= 0) _roi.x = -_roi.width + 1;
     if (_roi.y + _roi.height <= 0) _roi.y = -_roi.height + 1;
     if (_roi.x >= image.cols - 1) _roi.x = image.cols - 2;
@@ -183,7 +184,7 @@ cv::Rect KCFTracker::update(cv::Mat image)
 
     float peak_value;
     cv::Point2f res = detect(_tmpl, getFeatures(image, 0, 1.0f), peak_value);
-
+    // 略大尺度和略小尺度进行检测
     if (scale_step != 1) {
         // Test at a smaller _scale
         float new_peak_value;
@@ -219,7 +220,7 @@ cv::Rect KCFTracker::update(cv::Mat image)
     if (_roi.y + _roi.height <= 0) _roi.y = -_roi.height + 2;
 
     assert(_roi.width >= 0 && _roi.height >= 0);
-    cv::Mat x = getFeatures(image, 0);
+    cv::Mat x = getFeatures(image, 0);// 使用当前的检测框来训练样本参数
     train(x, interp_factor);
 
     return _roi;
@@ -257,7 +258,7 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
     return p;
 }
 
-// train tracker with a single image
+// train tracker with a single image / 使用图像进行训练，得到当前帧的_tmpl，_alphaf  一张图像也有正负样本
 void KCFTracker::train(cv::Mat x, float train_interp_factor)
 {
     using namespace FFTTools;
