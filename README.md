@@ -1,7 +1,7 @@
-#增加KCFshell脚本预处理图片功能，可以直接跑起来
-#KCF部分代码解析，部分解析内容参考网上博客
+# 增加KCFshell脚本预处理图片功能，可以直接跑起来
+# KCF部分代码解析，部分解析内容参考网上博客
 https://www.cnblogs.com/YiXiaoZhou/p/5925019.html
-#数据集下载地址：
+# 数据集下载地址：
 http://cvlab.hanyang.ac.kr/tracker_benchmark/datasets.html
 # C++ KCF Tracker
 This package includes a C++ class with several tracking methods based on the Kernelized Correlation Filter (KCF) [1, 2].   
